@@ -1,0 +1,23 @@
+name: Build Lowienie
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - name: Build
+        run: mvn -B package
+      - name: Pokaz pliki
+        run: ls -la target
+      - uses: actions/upload-artifact@v5
+        with:
+          name: Lowienie
+          path: target/*.jar
+          if-no-files-found: error

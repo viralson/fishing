@@ -1,0 +1,83 @@
+# =====================================================
+#   🎣 ŁOWIENIE – konfiguracja
+#   Menu: /ryby   ·   Admin: /ryby pomoc
+# =====================================================
+
+# Światy, w których łowienie działa po staremu (vanilla)
+wylaczone-swiaty: []
+
+# Minigra holu (zacinanie kucnięciem / LPM)
+minigra:
+  wlaczona: true
+  predkosc: 1.0                # mnożnik prędkości znacznika
+  limit-bez-trafienia: 140     # ticki bez trafienia, po których ryba odpływa (20 = 1 s)
+
+# Czas brania (mnożnik; 0.5 = ryby biorą 2× szybciej)
+branie:
+  mnoznik-czasu: 1.0
+
+# Szanse przy każdym braniu (reszta to ryby)
+szanse:
+  smieci: 0.10    # spada wraz ze szczęściem (min 2%)
+  skarb: 0.035    # rośnie ze szczęściem i umiejętnością
+  potwor: 0.03    # krwista przynęta ×3
+
+potwory:
+  wlaczone: true
+  czas-zycia-sekund: 180
+  mnoznik-nagrod: 1.0
+
+# Targ rybny – dynamiczne ceny
+rynek:
+  mnoznik: 1.0                 # globalny mnożnik cen
+  ryba-dnia-mnoznik: 2.5
+  spadek-za-sztuke: 0.012      # każda sprzedana sztuka obniża popyt o 1.2%
+  minimalny-popyt: 0.5         # cena nie spadnie poniżej 50%
+  odbudowa-na-minute: 0.06
+
+poziomy:
+  max: 50
+  mnoznik-xp: 1.0
+  nagroda-za-poziom: 250       # × numer poziomu
+
+umiejetnosci:
+  koszt-resetu-za-poziom: 1000
+
+ulepszenia:
+  mnoznik-kosztu: 1.0
+
+zadania:
+  mnoznik-nagrod: 1.0
+  bonus-kasa: 5000
+
+akwarium:
+  procent-wartosci-na-godzine: 0.01   # ryba warta 10k daje 100/h
+  limit-godzin: 24
+
+# Ławice – bulgoczące miejsca przy wędkujących graczach
+lawice:
+  wlaczone: true
+  szansa: 0.35         # co 20 s
+  czas-sekund: 60
+  polowow: 4           # po tylu połowach ławica znika
+
+# Zawody wędkarskie
+zawody:
+  co-ile-minut: 90     # 0 = tylko ręcznie
+  minut: 10
+  min-graczy: 2
+  nagrody: [15000, 7500, 3500]
+
+# Szał ryb (losowe wydarzenie)
+szal:
+  szansa-na-minute: 0.004   # ~raz na 4 godziny
+  minut: 5
+
+# Od jakiej rzadkości ogłaszać połowy na czacie
+ogloszenia:
+  od-rzadkosci: LEGENDARNA
+
+# Wbudowany portfel (gdy brak Vaulta)
+portfel:
+  saldo-poczatkowe: 1000
+  symbol: '$'

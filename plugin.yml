@@ -1,0 +1,18 @@
+name: Lowienie
+version: '${project.version}'
+main: pl.lowienie.LowieniePlugin
+api-version: '26.2'
+author: marynowiczfranek
+description: Customowy system łowienia – 50 gatunków ryb, minigra holu, wędki, przynęty, zawody i akwarium.
+softdepend: [Vault]
+
+commands:
+  ryby:
+    description: Przystań wędkarska i wszystkie funkcje łowienia.
+    aliases: [lowienie, wedkarstwo, fish, ryba]
+    usage: /ryby
+
+permissions:
+  lowienie.admin:
+    description: Dawanie wędek/przynęt/ryb, zawody, szał ryb, XP, reload.
+    default: op
