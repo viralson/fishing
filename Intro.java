@@ -99,10 +99,6 @@ public final class Intro extends BukkitRunnable {
                     for (int t = 0; t < eraseSpeed; t++) add(Anim.prefix(g, n), sub, null, 1f);
             }
         }
-        if (sounds && !frames.isEmpty()) {
-            Frame last = frames.get(frames.size() - 1);
-            frames.set(frames.size() - 1, new Frame(last.title(), last.subtitle(), Sound.ENTITY_PLAYER_LEVELUP, 1.4f));
-        }
     }
 
     private void add(String title, String sub, Sound s, float pitch) { frames.add(new Frame(title, sub, s, pitch)); }
@@ -164,12 +160,49 @@ public final class Intro extends BukkitRunnable {
         ZoneId zone;
         try { zone = ZoneId.of(c.getString("strefa-czasowa", "Europe/Warsaw")); } catch (Exception e) { zone = ZoneId.systemDefault(); }
         ZonedDateTime now = ZonedDateTime.now(zone);
+        if (s.contains("{wakacje}")) s = s.replace("{wakacje}", vacation(now.toLocalDate()));
         return s.replace("{player}", p.getName())
                 .replace("{greeting}", greeting(now.getHour()))
                 .replace("{time}", now.format(DateTimeFormatter.ofPattern(c.getString("format-godziny", "HH:mm:ss"))))
                 .replace("{date}", now.format(DateTimeFormatter.ofPattern(c.getString("format-daty", "dd.MM.yyyy"))))
                 .replace("{online}", String.valueOf(Bukkit.getOnlinePlayers().size()))
                 .replace("{max}", String.valueOf(Bukkit.getMaxPlayers()));
+    }
+
+    // ───────────── wakacje ─────────────
+
+    /** "Wakacje za: X dni" albo "Wakacje trwają!". */
+    private String vacation(java.time.LocalDate today) {
+        var c = pl.getConfig();
+        int year = today.getYear();
+        java.time.LocalDate start = vacStart(year), end = vacEnd(year);
+        if (!today.isBefore(start) && !today.isAfter(end)) return c.getString("wakacje.trwaja", "Wakacje trwają!");
+        if (today.isAfter(end)) start = vacStart(year + 1);
+        long days = java.time.temporal.ChronoUnit.DAYS.between(today, start);
+        String word = days == 1 ? c.getString("wakacje.dzien", "dzień") : c.getString("wakacje.dni", "dni");
+        return c.getString("wakacje.przed", "Wakacje za: {dni}").replace("{dni}", days + " " + word);
+    }
+
+    /** Początek: data z configu (MM-dd) albo "auto" = sobota po pierwszym piątku po 20 czerwca. */
+    private java.time.LocalDate vacStart(int year) {
+        String v = pl.getConfig().getString("wakacje.poczatek", "auto");
+        java.time.LocalDate d = parseMd(v, year);
+        if (d != null) return d;
+        java.time.LocalDate x = java.time.LocalDate.of(year, 6, 21);
+        while (x.getDayOfWeek() != java.time.DayOfWeek.FRIDAY) x = x.plusDays(1);
+        return x.plusDays(1);
+    }
+
+    private java.time.LocalDate vacEnd(int year) {
+        java.time.LocalDate d = parseMd(pl.getConfig().getString("wakacje.koniec", "08-31"), year);
+        return d == null ? java.time.LocalDate.of(year, 8, 31) : d;
+    }
+
+    private static java.time.LocalDate parseMd(String v, int year) {
+        if (v == null) return null;
+        String[] a = v.trim().split("-");
+        if (a.length != 2) return null;
+        try { return java.time.LocalDate.of(year, Integer.parseInt(a[0]), Integer.parseInt(a[1])); } catch (Exception e) { return null; }
     }
 
     /** Powitanie zależne od godziny, np. "5-18: Dzień dobry". */

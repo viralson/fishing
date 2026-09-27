@@ -3,7 +3,7 @@
 #   Kolory: &a &6 &e &f ... oraz hex &#ffaa00
 #   Gradient: {gradient:#36d1dc:#5b86e5}tekst{/gradient}
 #             (można dać więcej kolorów: {gradient:#ff0000:#ffff00:#00ff00}...)
-#   Placeholdery: {player} {greeting} {time} {date} {online} {max}
+#   Placeholdery: {player} {greeting} {time} {date} {online} {max} {wakacje}
 # =====================================================
 
 # Pokazuj tylko raz na gracza do restartu serwera
@@ -15,7 +15,7 @@ opoznienie-tickow: 30
 # Kucnięcie przerywa animację
 pomijanie-kucnieciem: false
 
-# Ciche kliknięcia przy wpisywaniu liter + dźwięk na koniec
+# Ciche kliknięcia przy wpisywaniu liter
 dzwieki: true
 
 # Szybkość (ticki na literę)
@@ -43,6 +43,15 @@ powitania:
   '5-18': 'Dzień dobry'
   '18-5': 'Dobry wieczór'
 
+# {wakacje} – odliczanie do wakacji / "Wakacje trwają!"
+wakacje:
+  poczatek: auto      # auto = dzień po zakończeniu roku szkolnego (piątek po 20 czerwca); albo np. '06-27'
+  koniec: '08-31'     # ostatni dzień wakacji (MM-dd)
+  przed: '&#A8F0A0Wakacje za: &#3FB950{dni}'
+  trwaja: '{gradient:#FFE259:#FFA751}Wakacje trwają!{/gradient}'
+  dzien: 'dzień'
+  dni: 'dni'
+
 # Kolejne ekrany animacji
 #  pisanie   – tytuł wpisuje się litera po literze
 #  kasowanie – na koniec kasuje się od końca
@@ -52,17 +61,22 @@ kroki:
   - title: '{gradient:#8BFF6B:#2ECC71}Witaj!{/gradient}'
     subtitle: '&#B8C4CC{greeting}, {gradient:#8BFF6B:#2ECC71}{player}{/gradient}&#B8C4CC!'
     trzymaj: 30
-  - title: '{gradient:#2ECC71:#1ABC9C}Na{/gradient}'
+  - title: '{gradient:#FFE259:#FFA751}Na{/gradient}'
     subtitle: '&#FFA751Godzina: &#FFE259{time}'
     trzymaj: 30
   - title: '&#FFFFFFCraftopia.PL'
-    subtitle: '&#B8C4CCObecnie jest &#7EE787{online} &#B8C4CCgraczy online!'
+    subtitle: '&#A8F0A0Obecnie jest &#3FB950{online} &#A8F0A0graczy online!'
     kasowanie: false
     fala: true
     fala-powtorzen: 1
     trzymaj: 10
   - title: '&#FFFFFFCraftopia.PL'
-    subtitle: '{gradient:#36D1DC:#5B86E5}Życzymy Miłej Gry & Dobrej Zabawy!{/gradient}'
+    subtitle: '{wakacje}'
+    pisanie: false
+    kasowanie: false
+    trzymaj: 40
+  - title: '&#FFFFFFCraftopia.PL'
+    subtitle: '{gradient:#36D1DC:#5B86E5}Baw się dobrze!{/gradient}'
     pisanie: false
     kasowanie: false
     fala: true
