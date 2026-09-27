@@ -55,7 +55,7 @@ public final class Quests {
             }
             case SPECIES -> {
                 List<Species> pool = new ArrayList<>();
-                for (Species s : pl.fishes().all())
+                for (Species s : pl.fishes().base())
                     if (s.where() == Species.Where.ANY && s.when() == Species.When.ANY && s.rarity().ordinal() <= 1) pool.add(s);
                 Species s = pool.get(r.nextInt(pool.size()));
                 int n = s.rarity() == Rarity.POSPOLITA ? 3 + r.nextInt(4) : 1 + r.nextInt(2);

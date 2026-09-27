@@ -464,6 +464,10 @@ public final class Fishing {
             d.dirty();
             if (d.bag.size() == d.bagCap())
                 Msg.send(p, "<err>Siatka jest pełna!</err> <m>Kolejne ryby trafią do ekwipunku. " + Msg.button("Sprzedaj", "/ryby sprzedaj", "Sprzedaj wszystkie ryby"));
+        } else if (!d.toBag && p.getInventory().firstEmpty() < 0 && d.bag.size() < d.bagCap()) {
+            d.bag.add(e);
+            d.dirty();
+            p.sendActionBar(Msg.mm("<m>Ekwipunek pełny – ryba trafiła do <a>siatki</a>."));
         } else {
             Quests.giveOrDrop(p, pl.items().fish(e));
         }

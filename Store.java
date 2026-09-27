@@ -99,7 +99,9 @@ public final class Store {
         List<Boolean> cl = y.getBooleanList("zadania.odebrane");
         for (int i = 0; i < 3 && i < cl.size(); i++) d.qClaimed[i] = cl.get(i);
         d.qBonus = y.getBoolean("zadania.bonus");
-        d.toBag = y.getBoolean("ustawienia.do-siatki", true);
+        // wersja 2: domyślnie ryby lecą do ekwipunku
+        d.toBag = y.getInt("wersja-danych", 1) >= 2 && y.getBoolean("ustawienia.do-siatki", false);
+        d.enabled = y.getBoolean("ustawienia.wedkarstwo", true);
         d.sounds = y.getBoolean("ustawienia.dzwieki", true);
         d.dropJunk = y.getBoolean("ustawienia.wyrzucaj-smieci", false);
         d.hints = y.getBoolean("ustawienia.podpowiedzi", true);
@@ -142,7 +144,9 @@ public final class Store {
         y.set("zadania.postep", List.of(d.qProg[0], d.qProg[1], d.qProg[2]));
         y.set("zadania.odebrane", List.of(d.qClaimed[0], d.qClaimed[1], d.qClaimed[2]));
         y.set("zadania.bonus", d.qBonus);
+        y.set("wersja-danych", 2);
         y.set("ustawienia.do-siatki", d.toBag);
+        y.set("ustawienia.wedkarstwo", d.enabled);
         y.set("ustawienia.dzwieki", d.sounds);
         y.set("ustawienia.wyrzucaj-smieci", d.dropJunk);
         y.set("ustawienia.podpowiedzi", d.hints);

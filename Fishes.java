@@ -14,11 +14,12 @@ import static pl.lowienie.Rarity.*;
 import static pl.lowienie.Species.When;
 import static pl.lowienie.Species.Where;
 
-/** Rejestr wszystkich 50 gatunków. */
+/** Rejestr gatunków: 50 bazowych + odmiany (razem ~500). */
 public final class Fishes {
 
     private final Map<String, Species> byId = new LinkedHashMap<>();
     private final Map<Rarity, List<Species>> byRarity = new EnumMap<>(Rarity.class);
+    private final List<Species> base = new ArrayList<>();
 
     public Fishes() {
         // ── Pospolite ─────────────────────────────
@@ -83,8 +84,70 @@ public final class Fishes {
         add("gwiezdna", "Gwiezdna płetwa", MITYCZNA, AMETHYST_SHARD, Where.ANY, When.NIGHT, 50, 150, 2, 20, 100000, "Spadła z nieba do wody.");
         add("krol_karpi", "Złoty Król Karpi", MITYCZNA, GOLD_INGOT, Where.ANY, When.ANY, 100, 250, 30, 120, 80000, "Legenda każdego wędkarza.");
 
+        base.addAll(byId.values());
+        generateVariants();
         for (Rarity r : Rarity.values()) byRarity.putIfAbsent(r, new ArrayList<>());
     }
+
+    // ───────────── odmiany (≈470 dodatkowych gatunków) ─────────────
+
+    /** Rodzaj żeński nazw bazowych – do odmiany przymiotników. */
+    private static final java.util.Set<String> FEMININE = java.util.Set.of("plotka", "ukleja", "makrela", "sardynka", "stynka",
+            "dorada", "fladra", "rozdymka", "glowacica", "ksiezycowa", "pirania", "deszczowka", "arapaima", "lodowa",
+            "latimeria", "zlota_rybka", "duch");
+
+    /** Typowa cena gatunku danej rzadkości. */
+    private static final double[] RARITY_PRICE = {25, 110, 470, 2000, 11000, 100000};
+
+    /**
+     * Odmiana: przymiotnik (m, ż), zmiana rzadkości, warunki (null = jak u bazy), rozmiar i cena.
+     */
+    private record Variant(String id, String m, String f, int bump, Where where, When when,
+                           double size, double priceMult, String desc) {}
+
+    private static final List<Variant> VARIANTS = List.of(
+            new Variant("srebrny", "Srebrny", "Srebrna", 0, null, null, 1.0, 1.25, "Łuski lśnią jak monety."),
+            new Variant("pregowany", "Pręgowany", "Pręgowana", 0, null, null, 1.0, 1.3, "Ciemne pasy na bokach."),
+            new Variant("karlowaty", "Karłowaty", "Karłowata", 0, null, null, 0.5, 0.9, "Mały, ale zadziorny."),
+            new Variant("cetkowany", "Cętkowany", "Cętkowana", 0, null, null, 1.0, 1.35, "Pokryty drobnymi cętkami."),
+            new Variant("nocny", "Nocny", "Nocna", 1, null, When.NIGHT, 1.0, 1.1, "Żeruje tylko po zmroku."),
+            new Variant("sloneczny", "Słoneczny", "Słoneczna", 1, null, When.DAY, 1.0, 1.1, "Wygrzewa się przy powierzchni."),
+            new Variant("deszczowy", "Deszczowy", "Deszczowa", 1, null, When.RAIN, 1.0, 1.15, "Wypływa, gdy pada deszcz."),
+            new Variant("lodowy", "Lodowy", "Lodowa", 1, Where.COLD, null, 1.0, 1.15, "Szron na płetwach."),
+            new Variant("bagienny", "Bagienny", "Bagienna", 1, Where.SWAMP, null, 1.0, 1.1, "Pachnie mułem i tatarakiem."),
+            new Variant("tropikalny", "Tropikalny", "Tropikalna", 1, Where.WARM, null, 1.0, 1.15, "Kolorowy jak rafa."),
+            new Variant("jaskiniowy", "Jaskiniowy", "Jaskiniowa", 1, Where.CAVE, null, 1.0, 1.2, "Blady i niemal ślepy."),
+            new Variant("olbrzymi", "Olbrzymi", "Olbrzymia", 1, null, null, 2.2, 1.3, "Okaz rzadko spotykanej wielkości."),
+            new Variant("burzowy", "Burzowy", "Burzowa", 2, null, When.STORM, 1.1, 1.2, "Naelektryzowany po uderzeniu pioruna."),
+            new Variant("zlocisty", "Złocisty", "Złocista", 2, null, null, 1.0, 1.4, "Złote łuski warte fortunę."),
+            new Variant("teczowy", "Tęczowy", "Tęczowa", 2, null, When.RAIN, 1.0, 1.3, "Mieni się wszystkimi kolorami."),
+            new Variant("widmowy", "Widmowy", "Widmowa", 3, null, When.NIGHT, 1.0, 1.2, "Półprzezroczysty jak duch."),
+            new Variant("pradawny", "Pradawny", "Pradawna", 3, Where.CAVE, null, 1.4, 1.3, "Pływał tu, zanim powstały góry."));
+
+    private void generateVariants() {
+        for (Species b : new ArrayList<>(base)) {
+            if (b.rarity().ordinal() > Rarity.EPICKA.ordinal()) continue;
+            for (Variant v : VARIANTS) {
+                if (v.where() != null && b.where() == v.where()) continue;
+                if (v.when() != null && b.when() != Species.When.ANY) continue;
+                Rarity r = Rarity.values()[Math.min(Rarity.MITYCZNA.ordinal(), b.rarity().ordinal() + v.bump())];
+                String adj = FEMININE.contains(b.id()) ? v.f() : v.m();
+                String name = adj + " " + Character.toLowerCase(b.name().charAt(0)) + b.name().substring(1);
+                double scale = b.price() / RARITY_PRICE[b.rarity().ordinal()];
+                double price = Math.round(RARITY_PRICE[r.ordinal()] * scale * v.priceMult());
+                double kgScale = Math.pow(v.size(), 3);
+                add(v.id() + "_" + b.id(), name, r, b.mat(),
+                        v.where() == null ? b.where() : v.where(), v.when() == null ? b.when() : v.when(),
+                        round(b.minCm() * v.size()), round(b.maxCm() * v.size()),
+                        b.minKg() * kgScale, b.maxKg() * kgScale, price, v.desc());
+            }
+        }
+    }
+
+    private static double round(double v) { return Math.round(v * 10) / 10.0; }
+
+    /** 50 ręcznie opisanych gatunków (bez odmian). */
+    public List<Species> base() { return Collections.unmodifiableList(base); }
 
     private void add(String id, String name, Rarity r, Material m, Where w, When t,
                      double minCm, double maxCm, double minKg, double maxKg, double price, String desc) {

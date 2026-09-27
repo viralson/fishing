@@ -1,6 +1,6 @@
 # 🎣 Łowienie – customowy system łowienia (Paper 26.2 / 26.3)
 
-Pełna przebudowa wędkowania: 50 gatunków ryb, minigra holu, ulepszane wędki, przynęty, dynamiczny targ, zawody, akwarium i potwory z głębin. Wszystkie menu i wiadomości są w MiniMessage, z animowaną wodą i dźwiękami.
+Pełna przebudowa wędkowania: **607 gatunków ryb**, minigra holu, ulepszane wędki, przynęty, dynamiczny targ, zawody, akwarium i potwory z głębin. Wszystkie menu i wiadomości są w MiniMessage, z animowaną wodą i dźwiękami.
 
 ## Instalacja
 1. Wrzuć wszystkie pliki do **głównego folderu** repo na GitHubie (razem z `.github/workflows/build.yml`).
@@ -17,9 +17,9 @@ Zarzucasz normalnie. Gdy ryba weźmie, na pasku akcji pojawia się **hol**:
 
 Kolor paska bossa zdradza, co siedzi na haczyku, zanim to wyciągniesz.
 
-## Funkcje (52)
+## Funkcje (54)
 **Ryby i połowy**
-1. 50 gatunków ryb w 6 rzadkościach: Pospolita → Mityczna.
+1. **607 gatunków ryb** w 6 rzadkościach: 50 ręcznie opisanych + 557 odmian (np. Srebrny karp, Nocna płotka, Burzowy szczupak, Widmowa latimeria, Pradawny jesiotr).
 2. Gatunki zależne od wody: ocean, rzeka, bagno, zimne wody, ciepłe wody, jaskinie (Y<45).
 3. Gatunki biorące tylko w dzień albo tylko w nocy.
 4. Gatunki pogodowe: tylko w deszczu albo w burzy.
@@ -58,7 +58,7 @@ Kolor paska bossa zdradza, co siedzi na haczyku, zanim to wyciągniesz.
 33. Rankingi: poziom, złowione ryby, zarobek, najcięższa ryba (także gracze offline).
 
 **Ekonomia**
-34. Siatka: ryby trafiają do wirtualnej siatki (36 → 108 miejsc).
+34. Ryby domyślnie trafiają do **ekwipunku**; przełącznik „Łów do siatki” wysyła je do wirtualnej siatki (36 → 108 miejsc). Gdy ekwipunek jest pełny, ryba sama ląduje w siatce.
 35. Sortowanie siatki: najnowsze, najcenniejsze, rzadkość, waga.
 36. Siatka: LPM sprzedaj, PPM wyjmij, Shift+LPM do akwarium; klik ryby w ekwipunku wkłada ją do siatki.
 37. Targ rybny z **dynamicznymi cenami**: im więcej sprzedajesz danego gatunku, tym niższa cena; popyt odbudowuje się z czasem.
@@ -79,6 +79,8 @@ Kolor paska bossa zdradza, co siedzi na haczyku, zanim to wyciągniesz.
 50. Oprawa: cząsteczki, tytuły, fajerwerki przy mitycznych, ogłoszenia na czacie z podglądem ryby po najechaniu.
 51. Unikalne menu przystani z animowanymi falami i rybką pływającą pod pomostem.
 52. Ustawienia: łowienie do siatki, dźwięki holu, wyrzucanie śmieci, podpowiedzi.
+53. **Przełącznik wędkarstwa** dla każdego gracza: wyłączony = zwykłe łowienie jak w vanilli (bez holu i customowych ryb). Przycisk w przystani, w ustawieniach i komenda `/ryby wlacz|wylacz`.
+54. Atlas i prognoza ze stronami – setki gatunków w każdej zakładce rzadkości.
 
 ## Komendy
 | Komenda | Opis |
@@ -88,6 +90,7 @@ Kolor paska bossa zdradza, co siedzi na haczyku, zanim to wyciągniesz.
 | `/ryby siatka / targ / atlas / akwarium` | Siatka, targ, atlas, akwarium |
 | `/ryby zadania / wedkarnia / wedka / umiejetnosci` | Zadania, sklep, warsztat wędki, umiejętności |
 | `/ryby top / zawody / prognoza / ustawienia / staty [gracz]` | Ranking, zawody, prognoza, ustawienia, statystyki |
+| `/ryby wlacz / wylacz` | Customowe łowienie / zwykłe z vanilli |
 
 **Admin** (`lowienie.admin`):
 - `/ryby daj wedke <gracz> <zwykla|bambusowa|stalowa|karbonowa|tytanowa|mityczna>`
@@ -98,7 +101,7 @@ Kolor paska bossa zdradza, co siedzi na haczyku, zanim to wyciągniesz.
 
 Aliasy: `/lowienie`, `/wedkarstwo`, `/fish`, `/ryba`. Ilości przyjmują krótkie formy (`10k`, `2mln`).
 
-## Gatunki (50)
+## Gatunki bazowe (50)
 | Rzadkość | Gatunki |
 |---|---|
 | Pospolite | Karp, Leszcz, Płotka, Ukleja, Okoń, Dorsz, Śledź, Makrela, Karaś, Sardynka, Stynka |
@@ -107,5 +110,19 @@ Aliasy: `/lowienie`, `/wedkarstwo`, `/fish`, `/ryba`. Ilości przyjmują krótki
 | Epickie | Marlin błękitny, Rekin młot, Arapaima, Lodowa ryba, Węgorz elektryczny, Latimeria, Złota rybka, Ryba-duch |
 | Legendarne | Wielki biały rekin, Królewski jesiotr, Kryształowy karp, Tęczowa ryba, Ognisty łosoś, Księżycowy węgorz |
 | Mityczne | Smocza ryba, Ryba Posejdona, Pradawny kolakant, Gwiezdna płetwa, Złoty Król Karpi |
+
+### Odmiany (557)
+Każdy gatunek od pospolitego do epickiego ma odmiany (gdy pasują do jego warunków). Odmiana zmienia rzadkość, siedlisko albo porę, rozmiar i cenę:
+
+| Odmiana | Rzadkość | Warunek / cecha |
+|---|---|---|
+| Srebrny, Pręgowany, Cętkowany, Karłowaty | bez zmian | wygląd i cena |
+| Nocny, Słoneczny, Deszczowy | +1 | noc / dzień / deszcz |
+| Lodowy, Bagienny, Tropikalny, Jaskiniowy | +1 | zimne wody / bagno / ciepłe wody / jaskinie |
+| Olbrzymi | +1 | ×2.2 długości |
+| Burzowy, Tęczowy | +2 | burza / deszcz |
+| Złocisty | +2 | bardzo cenny |
+| Widmowy | +3 | noc |
+| Pradawny | +3 | jaskinie, większy |
 
 Dane zapisują się w `plugins/Lowienie/gracze/<uuid>.yml` oraz `global.yml` (rekordy, targ, ranking).

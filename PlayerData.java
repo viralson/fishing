@@ -47,7 +47,9 @@ public final class PlayerData {
     public boolean qBonus;
 
     // ustawienia
-    public boolean toBag = true, sounds = true, dropJunk = false, hints = true;
+    public boolean toBag = false, sounds = true, dropJunk = false, hints = true;
+    /** Czy customowe łowienie jest włączone (wyłączone = vanilla). */
+    public boolean enabled = true;
     public Bait selected;
 
     public final Set<Integer> atlasRewards = new HashSet<>();

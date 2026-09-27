@@ -112,6 +112,25 @@ public final class Gui {
         m.set(32, Items.of(Material.COMPARATOR, "<a>Ustawienia", "<m>Siatka, dźwięki, śmieci, podpowiedzi.", "", "<a>▸ Kliknij"),
                 (pl2, t) -> { Sfx.enter(p); settings(p); });
 
+        m.set(34, Items.glowIf(d.enabled, Items.of(d.enabled ? Material.LIME_DYE : Material.GRAY_DYE,
+                d.enabled ? "<ok>Wędkarstwo: włączone" : "<err>Wędkarstwo: wyłączone",
+                d.enabled ? "<m>Hol, gatunki, skarby i potwory." : "<m>Łowisz jak w zwykłym Minecrafcie.",
+                "", "<a>▸ Kliknij, aby przełączyć")), (pl2, t) -> {
+            d.enabled = !d.enabled;
+            d.dirty();
+            Sfx.star(p, d.enabled);
+            Msg.send(p, d.enabled ? "<ok>Customowe wędkarstwo włączone." : "<m>Customowe wędkarstwo wyłączone – łowisz po staremu.");
+            main(p);
+        });
+        m.set(28, Items.glowIf(d.toBag, Items.of(d.toBag ? Material.COD_BUCKET : Material.CHEST,
+                d.toBag ? "<a>Ryby: do siatki" : "<a>Ryby: do ekwipunku",
+                "<m>Gdzie trafiają złowione ryby.", "", "<a>▸ Kliknij, aby przełączyć")), (pl2, t) -> {
+            d.toBag = !d.toBag;
+            d.dirty();
+            Sfx.toggle(p);
+            main(p);
+        });
+
         // animowana woda z pływającą rybką
         int[] tick = {0};
         Runnable anim = () -> {
@@ -386,7 +405,9 @@ public final class Gui {
 
     // ───────────── PROGNOZA ─────────────
 
-    public void forecast(Player p) {
+    public void forecast(Player p) { forecast(p, 0); }
+
+    public void forecast(Player p, int page) {
         PlayerData d = pl.store().get(p);
         Set<Species.Where> where = Fishing.where(p.getLocation());
         var w = p.getWorld();
@@ -407,19 +428,31 @@ public final class Gui {
         lore.add("");
         for (Rarity r : Rarity.values())
             lore.add(r.tag() + " <dark>·</dark> <t>" + String.format(java.util.Locale.ROOT, "%.2f%%", wt[r.ordinal()] / sum * 100));
-        m.set(4, Items.of(Material.COMPASS, 1, "<a>Warunki tutaj", lore));
         for (int i = 0; i < 9; i++) if (i != 4) m.set(i, water(day ? Material.LIGHT_BLUE_STAINED_GLASS_PANE : Material.BLUE_STAINED_GLASS_PANE));
 
-        int slot = 9;
-        for (Species s : pl.fishes().all()) {
-            if (slot >= 45) break;
-            if (!where.contains(s.where()) || !Fishing.whenOk(s.when(), w)) continue;
+        List<Species> ok = new ArrayList<>();
+        for (Species s : pl.fishes().all())
+            if (where.contains(s.where()) && Fishing.whenOk(s.when(), w)) ok.add(s);
+        ok.sort(java.util.Comparator.comparingInt((Species s) -> s.rarity().ordinal()).reversed());
+        int unknown = 0;
+        for (Species s : ok) if (!d.species.containsKey(s.id())) unknown++;
+        lore.add("");
+        lore.add("<m>Bierze tu <a>" + ok.size() + "</a> <m>gatunków, nieodkrytych <a>" + unknown);
+        m.set(4, Items.of(Material.COMPASS, 1, "<a>Warunki tutaj", lore));
+        int pages = Math.max(1, (ok.size() + 35) / 36);
+        int pg = Math.max(0, Math.min(page, pages - 1));
+        for (int i = 0; i < 36; i++) {
+            int idx = pg * 36 + i;
+            if (idx >= ok.size()) break;
+            Species s = ok.get(idx);
             boolean known = d.species.containsKey(s.id());
-            m.set(slot++, known
+            m.set(9 + i, known
                     ? Items.of(s.mat(), s.display(), s.rarity().tag(), "<m>" + s.where().label + " <dark>·</dark> <m>" + s.when().label)
                     : Items.of(Material.GRAY_DYE, s.rarity().c() + "???", s.rarity().tag(), "<m>Nieodkryty – bierze tutaj!"));
         }
-        if (slot == 9) m.set(22, Items.of(Material.BARRIER, "<err>Nic tu nie bierze", "<m>Podejdź bliżej wody."));
+        if (ok.isEmpty()) m.set(22, Items.of(Material.BARRIER, "<err>Nic tu nie bierze", "<m>Podejdź bliżej wody."));
+        if (pg > 0) m.set(46, Items.of(Material.SPECTRAL_ARROW, "<t>← Strona " + pg), (pp, c) -> { Sfx.page(p); forecast(p, pg - 1); });
+        if (pg < pages - 1) m.set(52, Items.of(Material.SPECTRAL_ARROW, "<t>Strona " + (pg + 2) + " →"), (pp, c) -> { Sfx.page(p); forecast(p, pg + 1); });
         backButton(m, 45, this::main);
         seabed(m);
         m.fill(Material.BLACK_STAINED_GLASS_PANE);
@@ -519,10 +552,11 @@ public final class Gui {
     public void settings(Player p) {
         PlayerData d = pl.store().get(p);
         Menu m = new Menu(3, T + "Ustawienia</gradient>");
-        toggle(m, 10, p, Material.COD_BUCKET, "Łów do siatki", "Ryby trafiają prosto do siatki.", d.toBag, () -> d.toBag = !d.toBag);
-        toggle(m, 12, p, Material.NOTE_BLOCK, "Dźwięki holu", "Tykanie znacznika podczas holu.", d.sounds, () -> d.sounds = !d.sounds);
+        toggle(m, 11, p, Material.FISHING_ROD, "Customowe wędkarstwo", "Wyłączone = zwykłe łowienie jak w vanilli.", d.enabled, () -> d.enabled = !d.enabled);
+        toggle(m, 12, p, Material.COD_BUCKET, "Łów do siatki", "Włączone: ryby do siatki. Wyłączone: do ekwipunku.", d.toBag, () -> d.toBag = !d.toBag);
+        toggle(m, 13, p, Material.NOTE_BLOCK, "Dźwięki holu", "Tykanie znacznika podczas holu.", d.sounds, () -> d.sounds = !d.sounds);
         toggle(m, 14, p, Material.LEATHER_BOOTS, "Wyrzucaj śmieci", "Śmieci wracają od razu do wody.", d.dropJunk, () -> d.dropJunk = !d.dropJunk);
-        toggle(m, 16, p, Material.OAK_SIGN, "Podpowiedzi", "Wskazówki na ekranie i ławice.", d.hints, () -> d.hints = !d.hints);
+        toggle(m, 15, p, Material.OAK_SIGN, "Podpowiedzi", "Wskazówki na ekranie i ławice.", d.hints, () -> d.hints = !d.hints);
         backButton(m, 18, this::main);
         m.fill(Material.BLACK_STAINED_GLASS_PANE);
         m.open(p);

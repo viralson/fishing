@@ -39,6 +39,7 @@ public final class FishListener implements Listener {
     public void onFish(PlayerFishEvent e) {
         Player p = e.getPlayer();
         if (disabledWorld(p)) return;
+        if (!pl.store().get(p).enabled && !pl.fishing().inHol(p)) return; // zwykłe łowienie z vanilli
         switch (e.getState()) {
             case FISHING -> {
                 if (pl.fishing().inHol(p)) { e.setCancelled(true); return; }

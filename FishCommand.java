@@ -13,7 +13,7 @@ import java.util.Locale;
 public final class FishCommand implements TabExecutor {
 
     private static final List<String> SUBS = List.of("sprzedaj", "siatka", "targ", "atlas", "akwarium", "zadania", "wedkarnia",
-            "wedka", "umiejetnosci", "top", "zawody", "prognoza", "ustawienia", "staty", "pomoc");
+            "wedka", "umiejetnosci", "top", "zawody", "prognoza", "ustawienia", "staty", "wlacz", "wylacz", "pomoc");
     private static final List<String> ADMIN = List.of("daj", "szal", "xp", "reload");
 
     private final LowieniePlugin pl;
@@ -88,6 +88,13 @@ public final class FishCommand implements TabExecutor {
             case "zawody" -> { Sfx.open(p); pl.gui().tournament(p); }
             case "prognoza" -> { Sfx.open(p); pl.gui().forecast(p); }
             case "ustawienia" -> { Sfx.open(p); pl.gui().settings(p); }
+            case "wlacz", "wylacz" -> {
+                PlayerData d = pl.store().get(p);
+                d.enabled = sub.equals("wlacz");
+                d.dirty();
+                Sfx.star(p, d.enabled);
+                Msg.ok(p, d.enabled ? "Customowe wędkarstwo <ok>włączone</ok>." : "Customowe wędkarstwo <err>wyłączone</err> – łowisz jak w vanilli.");
+            }
             case "staty" -> {
                 Player t = a.length > 1 ? Bukkit.getPlayerExact(a[1]) : p;
                 if (t == null) { Msg.err(p, "Gracz musi być online."); return true; }
@@ -112,6 +119,7 @@ public final class FishCommand implements TabExecutor {
         s.sendMessage(Msg.mm(" <a>/ryby siatka · targ · atlas · akwarium</a>"));
         s.sendMessage(Msg.mm(" <a>/ryby zadania · wedkarnia · wedka · umiejetnosci</a>"));
         s.sendMessage(Msg.mm(" <a>/ryby top · zawody · prognoza · ustawienia · staty [gracz]</a>"));
+        s.sendMessage(Msg.mm(" <a>/ryby wlacz · wylacz</a> <m>customowe / zwykłe łowienie"));
         if (admin) {
             s.sendMessage(Msg.mm(" <err>/ryby daj wedke|przynete|rybe <gracz> <typ> [ilość]"));
             s.sendMessage(Msg.mm(" <err>/ryby zawody start [ilosc|waga|punkty] [min] · stop"));

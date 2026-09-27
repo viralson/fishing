@@ -49,32 +49,39 @@ public final class FishGui {
 
     // ───────────── ATLAS ─────────────
 
-    public void atlas(Player p, Rarity tab) {
+    public void atlas(Player p, Rarity tab) { atlas(p, tab, 0); }
+
+    public void atlas(Player p, Rarity tab, int page) {
         PlayerData d = pl.store().get(p);
-        Menu m = new Menu(6, T + "Atlas ryb</gradient> <dark>· " + tab.tag());
+        List<Species> list = pl.fishes().of(tab);
+        int pages = Math.max(1, (list.size() + 35) / 36);
+        int pg = Math.max(0, Math.min(page, pages - 1));
+        Menu m = new Menu(6, T + "Atlas ryb</gradient> <dark>· " + tab.tag() + " <dark>" + (pg + 1) + "/" + pages);
         for (int i = 0; i < 9; i++) m.set(i, water(glass(tab)));
         int pct = d.discovered() * 100 / pl.fishes().size();
+        int known = 0;
+        for (Species s : list) if (d.species.containsKey(s.id())) known++;
         m.set(4, Items.of(Material.BOOK, "<a>Atlas ryb",
                 "<m>Odkryto " + Msg.bar(pct / 100.0, 20, "a") + " <t>" + pct + "%",
-                "<m>Gatunki <t>" + d.discovered() + "/" + pl.fishes().size(), "",
+                "<m>Gatunki <t>" + d.discovered() + "/" + pl.fishes().size(),
+                "<m>W tej zakładce <t>" + known + "/" + list.size(), "",
                 "<m>Nagrody za odkrycia:",
                 mile(d, 25, "5k"), mile(d, 50, "20k"), mile(d, 75, "60k"), mile(d, 100, "250k + Tytanowa wędka")));
 
-        int[] slots = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34};
-        List<Species> list = pl.fishes().of(tab);
         Species daily = pl.market().dailyFish();
-        int known = 0;
-        for (int i = 0; i < list.size() && i < slots.length; i++) {
-            Species s = list.get(i);
+        for (int i = 0; i < 36; i++) {
+            int idx = pg * 36 + i;
+            if (idx >= list.size()) break;
+            Species s = list.get(idx);
+            int slot = 9 + i;
             PlayerData.SpStat st = d.species.get(s.id());
             if (st == null) {
-                m.set(slots[i], Items.of(Material.GRAY_DYE, s.rarity().c() + "???",
+                m.set(slot, Items.of(Material.GRAY_DYE, s.rarity().c() + "???",
                         s.rarity().tag(), "",
                         "<m>Siedlisko <t>" + s.where().label, "<m>Kiedy <t>" + s.when().label, "",
                         "<dark>Jeszcze nie złowiono"));
                 continue;
             }
-            known++;
             Store.Record rec = pl.store().records.get(s.id());
             double lo = pl.market().base(new FishEntry(s.id(), s.minCm(), s.minKg(), 1, "", 0)) * pl.market().demand(s.id());
             double hi = pl.market().base(new FishEntry(s.id(), s.maxCm(), s.maxKg(), 5, "", 0)) * pl.market().demand(s.id());
@@ -88,16 +95,19 @@ public final class FishGui {
                     "<m>Twój rekord <t>" + FishItems.kg(st.bestKg) + " <dark>·</dark> " + FishEntry.starsTag(Math.max(1, st.bestStars)),
                     "<m>Rekord serwera <a>" + (rec == null ? "–" : FishItems.kg(rec.kg()) + " <m>(" + Msg.esc(rec.holder()) + ")"), "",
                     "<m>Cena <money>" + Msg.shortNum(lo) + "–" + Msg.shortNum(hi) + "</money> <dark>·</dark> " + pl.market().trend(s.id())));
-            m.set(slots[i], Items.glowIf(s == daily, Items.of(s.mat(), 1, s.display(), lore)));
+            m.set(slot, Items.glowIf(s == daily, Items.of(s.mat(), 1, s.display(), lore)));
         }
-        m.set(40, Items.of(dye(tab), tab.tag() + " <dark>· <t>" + known + "/" + list.size()));
 
         backButton(m, 45);
+        if (pg > 0) m.set(46, Items.of(Material.SPECTRAL_ARROW, "<t>← Strona " + pg), (pp, c) -> { Sfx.page(p); atlas(p, tab, pg - 1); });
+        if (pg < pages - 1) m.set(53, Items.of(Material.SPECTRAL_ARROW, "<t>Strona " + (pg + 2) + " →"), (pp, c) -> { Sfx.page(p); atlas(p, tab, pg + 1); });
         Rarity[] rs = Rarity.values();
         for (int i = 0; i < rs.length; i++) {
             Rarity r = rs[i];
-            m.set(47 + i, Items.glowIf(r == tab, Items.of(dye(r), r.tag(), r == tab ? "<ok>● wybrane" : "<m>▸ Kliknij")),
-                    (pp, c) -> { if (r != tab) { Sfx.page(p); atlas(p, r); } });
+            int total = pl.fishes().of(r).size();
+            m.set(47 + i, Items.glowIf(r == tab, Items.of(dye(r), r.tag() + " <dark>(" + total + ")",
+                    r == tab ? "<ok>● wybrane" : "<m>▸ Kliknij")),
+                    (pp, c) -> { if (r != tab) { Sfx.page(p); atlas(p, r, 0); } });
         }
         m.fill(Material.BLACK_STAINED_GLASS_PANE);
         m.open(p);
