@@ -1,18 +1,16 @@
-name: Lowienie
+name: Powitanie
 version: '${project.version}'
-main: pl.lowienie.LowieniePlugin
+main: pl.powitanie.PowitaniePlugin
 api-version: '26.2'
 author: marynowiczfranek
-description: Customowy system łowienia – 50 gatunków ryb, minigra holu, wędki, przynęty, zawody i akwarium.
-softdepend: [Vault]
+description: Animowane powitanie na titlach – raz na gracza do restartu.
 
 commands:
-  ryby:
-    description: Przystań wędkarska i wszystkie funkcje łowienia.
-    aliases: [lowienie, wedkarstwo, fish, ryba]
-    usage: /ryby
+  powitanie:
+    description: Test i przeładowanie animacji powitalnej.
+    usage: /powitanie
 
 permissions:
-  lowienie.admin:
-    description: Dawanie wędek/przynęt/ryb, zawody, szał ryb, XP, reload.
+  powitanie.admin:
+    description: /powitanie pokaz, reset, reload
     default: op

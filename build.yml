@@ -1,4 +1,4 @@
-name: Build Lowienie
+name: Build Powitanie
 on:
   push:
   workflow_dispatch:
@@ -18,6 +18,6 @@ jobs:
         run: ls -la target
       - uses: actions/upload-artifact@v5
         with:
-          name: Lowienie
+          name: Powitanie
           path: target/*.jar
           if-no-files-found: error
